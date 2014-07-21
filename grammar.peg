@@ -1,0 +1,15 @@
+grammar Wisp
+
+  program   <- cell+ <Program>
+  cell      <- space* data:(list / vector / atom) space* <Cell>
+  list      <- "(" cells:cell+ ")" <List>
+  vector    <- "[" cells:cell* "]" <Vector>
+  atom      <- boolean / number / string / symbol <Datum>
+  boolean   <- ("true" / "false") <Boolean>
+  number    <- "-"? ("0" / [1-9] [0-9]*) ("." [0-9]+)? <Number>
+  string    <- "\"" ("\\" . / [^"])* "\"" <String>
+  symbol    <- (!delimiter .)+ <Symbol>
+  space     <- [\s\n\r\t] <Space>
+  paren     <- "(" / ")" <Paren>
+  bracket   <- "[" / "]" <Bracket>
+  delimiter <- paren / space / bracket <Delim>
