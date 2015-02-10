@@ -83,13 +83,15 @@ p.Parser.Cell = {
         if (this.data.textValue === '>')  { return function(args) { return parseFloat(args[0].eval(scope, env)) >   parseFloat(args[1].eval(scope, env)); } }
         if (this.data.textValue === '<')  { return function(args) { return parseFloat(args[0].eval(scope, env)) <   parseFloat(args[1].eval(scope, env)); } }
 
-        if (this.data.textValue === 'if') { return function(args) {
-            if (args[0].eval(scope, env)) {
-                return args[1].eval(scope, env);
-            } else {
-                return args[2].eval(scope, env);
+        if (this.data.textValue === 'if') {
+            return function(args) {
+                if (args[0].eval(scope, env)) {
+                    return args[1].eval(scope, env);
+                } else {
+                    return args[2].eval(scope, env);
+                }
             }
-        }}
+        }
 
         if (this.data.textValue === 'case') { return function(args) {
 
@@ -205,6 +207,7 @@ p.Parser.Cell = {
             var _fnargs = args[1].elements[1].elements;
             var fn_args = args[1].data.cells.elements;
             var fn_body = args[2];
+            debugger;
 
             var arg_names = (function() {
                 var names = [];

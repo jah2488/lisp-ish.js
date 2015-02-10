@@ -15,7 +15,7 @@ p.Parser.Program = {
         for (var i = 0, n = cells.length; i < n; i++) {
             try {
                 var resp = cells[i].eval(scope);
-                if (resp !== null && resp !== undefined && resp !== NaN) {
+                if (resp !== null && resp !== undefined && !isNaN(resp)) {
                     value = resp; // Only return the last expression
                 }
             } catch (e) {
@@ -36,7 +36,7 @@ p.Parser.Program = {
         for (var i = 0, n = cells.length; i < n; i++) {
             try {
                 var resp = cells[i].compile(scope);
-                if (resp !== null && resp !== undefined && resp !== NaN) {
+                if (resp !== null && resp !== undefined && !isNaN(resp)) {
                     console.log('RESPONSE: ', resp);
                     value += resp; // Only return the last expression
                 }
@@ -112,7 +112,7 @@ p.Parser.Cell = {
 
 
         if (this.data.textValue == 'def') { return function(args) {
-            var resp = args[1].eval(scope, env)
+            var resp = args[1].eval(scope, env);
             this[args[0].eval(scope, env)] = resp;
             return resp;
         }}
@@ -141,8 +141,7 @@ p.Parser.Cell = {
 
         if (scope !== undefined && scope.fns[this.data.textValue] !== undefined) {
             var fn_name = this.data.textValue;
-            var fn = scope.fns[fn_name];
-            return fn;
+            return scope.fns[fn_name];
         }
 
         return this.data.eval(scope, env);
@@ -184,7 +183,7 @@ p.Parser.Cell = {
         }}
 
         if (this.data.textValue === 'case') { return function(args) {
-            var value = '';
+            var value;
             if (args.length % 2 == 0) { throw "Uneven case" }
             if (args.length > 8) { console.log("TOO MANY STATEMENTS IN CASE: IGNORING ALL MATCHES PAST ", args[7].compile(scope, env)); }
 
@@ -198,7 +197,7 @@ p.Parser.Cell = {
         }}
 
         if (this.data.textValue == 'def') { return function(args) {
-            var resp = args[1].compile(scope, env)
+            var resp = args[1].compile(scope, env);
             return 'var ' + args[0].compile(scope, env) + ' = ' + resp + '; ';
         }}
 
@@ -249,7 +248,7 @@ p.Parser.Number = {
     compile: function(scope) {
         return parseFloat(this.textValue);
     }
-}
+};
 p.Parser.String = {
     name: 'String',
     eval: function(scope) {
@@ -258,7 +257,7 @@ p.Parser.String = {
     compile: function(scope) {
         return this.textValue;
     }
-}
+};
 p.Parser.Symbol = {
     name: 'Symbol',
     eval: function(scope) {
