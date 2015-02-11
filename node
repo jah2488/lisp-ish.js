@@ -1,0 +1,1 @@
+function plus_two(n) { return (function(args) { return parseFloat(2) + parseFloat(n); })(); } plus_two(10);
