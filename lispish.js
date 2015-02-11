@@ -1,5 +1,5 @@
-var locus  = require('locus');
-var should = require('should');
+#!/usr/bin/env node
+
 var p      = require('./grammar');
 
 p.Parser.Program = {
@@ -304,15 +304,16 @@ p.Parser.Bracket = { name: 'Bracket', eval: function(scope) { return function() 
 p.Parser.Delim   = { name: 'Delim',   eval: function(scope) { return function() { return this.textValue }; } };
 
 
-if (process.argv[0 + 2] == 'run' || process.argv[0 + 2] == 'r') {
+if (process.argv[0 + 2].match(/run|r|-r|-e/)) {
   console.log(p.parse(process.argv[0 + 3]).eval({}));
 }
 
-if (process.argv[0 + 2] == 'compile' || process.argv[0 + 2] == 'c') {
+if (process.argv[0 + 2].match(/compile|c|-c/)) {
   console.log(p.parse(process.argv[0 + 3]).compile({}));
 }
 
-if (process.argv[0 + 2] == 'test') {
+if (process.argv[0 + 2].match(/test|t|-t/)) {
+    var should = require('should');
     var TRU = 'true';
     var FSE = 'false';
 
