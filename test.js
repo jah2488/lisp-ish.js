@@ -35,13 +35,14 @@ p.Parser.Program = {
             try {
                 var resp = cells[i].compile(scope);
                 if (resp !== null && resp !== undefined && resp !== NaN) {
-                    console.log('RESPONSE: ', resp);
+                    if(process.env.DEBUG === 'TRUE') {
+                       console.log('RESPONSE: ', resp);
+                    }
                     value += resp; // Only return the last expression
                 }
             } catch (e) {
-                console.log(e.stack);
+                console.log('Stack: ', e.stack);
                 console.log('Exception Occured Evaluating This Node -> \n', cells[i]);
-                console.log(e);
             }
         }
 
@@ -61,13 +62,7 @@ p.Parser.Datum = {
         }
     },
     compile: function(scope, env) {
-        if (env !== undefined && scope[env][this.textValue] !== undefined) {
-            return scope[env][this.textValue];
-        } else if (scope[this.textValue] !== undefined) {
-            return scope[this.textValue];
-        } else {
-            return this.textValue;
-        }
+        return this.textValue;
     }
 };
 p.Parser.Cell = {
@@ -207,7 +202,6 @@ p.Parser.Cell = {
             var _fnargs = args[1].elements[1].elements;
             var fn_args = args[1].data.cells.elements;
             var fn_body = args[2];
-            debugger;
 
             var arg_names = (function() {
                 var names = [];
@@ -222,7 +216,10 @@ p.Parser.Cell = {
                 return fn_name.replace('?','Predicate').replace('-', '_');
             })();
 
-            return 'function ' + js_fn_name + '(' + arg_names.join(', ') + ') { return ' +  fn_body.compile(scope, fn_name) + ' }; '
+            var final_body = fn_body.compile(scope, fn_name);
+            var final_fn = 'function ' + js_fn_name + '(' + arg_names.join(', ') + ') { return ' + final_body + '; } ';
+
+            return final_fn;
         }}
 
         if (scope !== undefined && scope.fns[this.data.textValue.replace('?','Predicate').replace('-','_')] !== undefined) {
@@ -283,7 +280,7 @@ p.Parser.List = {
             return proc.call(scope, cells.slice(1));
         } else {
             var fn_name = proc.replace('?','Predicate').replace('-','_');
-            return fn_name + '();';
+            return fn_name + '(' + cells.slice(1).map(function(c) { return c.compile(scope, env)}).join(', ') + ');';
         }
     }
 };
@@ -329,7 +326,8 @@ var CASE_MUCH = '(case "pick-me" "no" false "pick-me" true 10 false "no" false "
 
 var DEF  = '(def yo 100) (+ 100 yo)';
 var DEFN = '(defn is-yo? [] true) (is-yo?)';
-var DEF2 = '(defn plus-two [n] (+ n 2)) (plus-two 2)';
+var DEF2 = '(defn plus-two [n] (+ n 2))' +
+           ' (plus-two 2)';
 
 var DEFN_DEF = '' +
 '(def max 6)' +
@@ -388,22 +386,24 @@ it('JS -> CASE_MUCH',    function() { eval(p.parse(CASE).compile({})).should.be.
 
 it('JS -> DEF',  function() { eval(p.parse(DEF).compile({})).should.be.exactly(200); });
 it('JS -> DEFN', function() { var code = p.parse(DEFN).compile({}); eval(code).should.be.exactly(true); });
-it('JS -> DEFN ADD 2', function() { var code = p.parse(DEF2).compile({}); console.log(DEF2); console.log(code); eval(code).should.be.exactly(4); });
-xit('JS -> DEFN_DEF',   function() { eval(p.parse(DEFN_DEF).compile({})).should.be.exactly(18); });
+it('JS -> DEFN ADD 2', function() { var code = p.parse(DEF2).compile({}); eval(code).should.be.exactly(4); });
+it('JS -> DEFN_DEF',   function() { eval(p.parse(DEFN_DEF).compile({})).should.be.exactly(18); });
 
-xit('converts to js', function() {
+it('evals to js', function() {
     p.parse('(def message "Greetings!") (defn greet [] message) (greet)').eval({}).should.be.exactly('Greetings!');
-    p.parse('(def message "Greetings!") (defn greet [] message)').compile({}).should.be.exactly('Greetings!');
+});
+it('converts to js', function() {
+    var code = p.parse('(def message "Greetings!") (defn greet [] message) (greet)').compile({}); eval(code).should.be.exactly('Greetings!');
 });
 
 
 function xit(name, fn) { console.log('\x1b[33m  ~ %s\x1b[0m', name); }
-function it(name, fn){
+function it(name, fn) {
   try {
     fn();
   } catch (err) {
-    console.log('\x1b[31m  ✗ %s', name);
-    console.log('    %s\x1b[0m', err.stack);
+    console.log('\x1b[31m  ✗ %s\x1b[0m', name);
+    //console.log('    %s\x1b[0m', err.stack);
     return;
   }
   console.log('\x1b[32m  √ %s\x1b[0m', name);
