@@ -1,3 +1,5 @@
+vim: set filetype=wisp:
+vim: set ft=wisp:
 
 (defn fizzbuzz [n]
   (if (= 0 (mod n 15))
