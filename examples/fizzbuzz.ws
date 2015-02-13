@@ -1,3 +1,5 @@
+vim: set ft=clojure:
+
 (defn fizzbuzz [n]
   (if (= 0 (mod n 15))
     "fizzbuzz"
